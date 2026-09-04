@@ -33,4 +33,4 @@
 	url = https://github.com/tree-sitter/tree-sitter-cpp
 [submodule "grammars/lua"]
 	path = grammars/lua
-	url = https://github.com/tjdevries/tree-sitter-lua
+	url = https://github.com/tjdevries/tree-sitter-lua.git
