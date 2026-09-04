@@ -74,6 +74,7 @@ dependencies {
     implementation(projects.treeSitterJson)
     implementation(projects.treeSitterKotlin)
     implementation(projects.treeSitterLog)
+    implementation(projects.treeSitterLua)
     implementation(projects.treeSitterPython)
     implementation(projects.treeSitterXml)
 
