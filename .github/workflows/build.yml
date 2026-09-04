@@ -70,12 +70,17 @@ jobs:
       - name: Change Gradle wrapper permissions
         run: chmod +x ./gradlew
       - name: Assemble Release
-        run: ./gradlew assembleRelease generateDebugSymbolsRelease --parallel --stacktrace
+        run: ./gradlew assembleRelease generateDebugSymbolsRelease --parallel --stacktrace -x :tree-sitter-lua:generateTreeSitterGrammar
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-      - name: Generate Maven packages (skip signing)
+      - name: Generate Maven packages
         run: |
-          ./gradlew :android-tree-sitter:publishToMavenLocal -x signMavenPublication -x :tree-sitter-lua:generateTreeSitterGrammar --stacktrace
+          ./gradlew :android-tree-sitter:publishToMavenLocal \
+            -x :tree-sitter-lua:generateTreeSitterGrammar \
+            -Psigning.keyId=DEADBEEF \
+            -Psigning.password=fake \
+            -Psigning.secretKeyRingFile=/tmp/fake.gpg \
+            --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       - name: Upload Maven packages as artifact
@@ -131,7 +136,7 @@ jobs:
       - name: Change Gradle wrapper permissions
         run: chmod +x ./gradlew
       - name: Run debug tests
-        run: ./gradlew testDebug --continue --parallel --stacktrace
+        run: ./gradlew testDebug --continue --parallel --stacktrace -x :tree-sitter-lua:generateTreeSitterGrammar
         env:
           ANDROIDIDE_TEST: true
       - name: Upload Test Reports
