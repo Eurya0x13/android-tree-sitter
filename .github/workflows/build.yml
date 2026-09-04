@@ -13,20 +13,16 @@ on:
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MVN_USERNAME }}
   ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MVN_PASSWORD }}
   ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MVN_SIGNING_KEY }}
   ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.MVN_SIGNING_KEY_ID }}
   ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MVN_SIGNING_KEY_PASSWORD }}
-
   BUILD_JAVA_VERSION: '17'
   BUILD_JAVA_DIST: 'temurin'
   BUILD_IS_RELEASE: ${{ github.ref == 'refs/heads/main'  }}
   PublishToMaven: ${{ github.ref == 'refs/heads/main' }}
-
   DEBUG_INFO_PATH: '**/build/debug-symbols/**/*.debug_info'
-
   ATS_SUDO: sudo
   ATS_APT_UPDATE: apt-get update
   ATS_APT_UPGRADE: apt-get upgrade -y
@@ -77,20 +73,17 @@ jobs:
         run: ./gradlew assembleRelease generateDebugSymbolsRelease --parallel --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-      
       - name: Generate Maven packages (skip signing)
         run: |
-          ./gradlew publishToMavenLocal -x sign -x signMavenPublication --stacktrace
+          ./gradlew :android-tree-sitter:publishToMavenLocal -x signMavenPublication -x :tree-sitter-lua:generateTreeSitterGrammar --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-
       - name: Upload Maven packages as artifact
         uses: actions/upload-artifact@v4
         with:
           name: maven-local-repo
-          path: ~/.m2/repository/
+          path: ~/.m2/repository/com/itsaky/**/*
           if-no-files-found: warn
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
