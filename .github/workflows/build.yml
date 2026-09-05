@@ -63,24 +63,28 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Change Gradle wrapper permissions
         run: chmod +x ./gradlew
-      - name: Build AAR
-        run: ./gradlew :android-tree-sitter:assembleRelease --stacktrace
+      - name: Build all AARs
+        run: ./gradlew assembleRelease --stacktrace
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-      - name: Verify AAR content
+      - name: Verify android-tree-sitter AAR contains .so
         run: |
-          unzip -l android-tree-sitter/build/outputs/aar/*.aar | grep '\.so$' || echo "No .so files found"
-      - name: Upload AAR
+          unzip -l android-tree-sitter/build/outputs/aar/*.aar | grep '\.so$' || echo "No .so files found in android-tree-sitter AAR"
+      - name: Collect all AARs and pack into ZIP
+        run: |
+          mkdir -p aar-collection
+          find . -type f -path "*/build/outputs/aar/*.aar" -exec cp {} aar-collection/ \;
+          if [ -z "$(ls -A aar-collection)" ]; then
+            echo "No AAR files found!" && exit 1
+          fi
+          zip -r all-aars.zip aar-collection/
+      - name: Upload all AARs ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: android-tree-sitter-aar
-          path: android-tree-sitter/build/outputs/aar/*.aar
+          name: all-aars
+          path: all-aars.zip
           if-no-files-found: error
-      - name: Assemble APK
-        run: ./gradlew assembleRelease generateDebugSymbolsRelease --parallel --stacktrace
-        env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-      - name: Upload APK
+      - name: Upload APK (optional)
         uses: actions/upload-artifact@v4
         with:
           name: app-release
